@@ -52,6 +52,7 @@ export default function Sidebar({
     const nagarNigamWards = [
       "awas-vikas", "badreshwar", "baleshwar", "baman-khola", "baman khola", "bedreshwar", "bhiyarkhola", 
       "champanaula", "chenakhan", "dharanaula", "dhunimandir", "dubkiya", "dugalkhola", "gandhi-park", 
+      "hanumaan-mandir", "hanumaan mandir",
       "heera-dungri", "heera dungri", "jhinjhad", "kahgmara", "lakshmeshwar", "lala-bazar", "lala bazar", 
       "makidi", "malla-rajpur", "malla rajpur", "mission-compound", "mission compound", "murli-manohar", 
       "murli manohar", "nanda-devi", "nanda devi", "naramdeshwar", "narsingh-wadi", "narsingh wadi", 
@@ -62,6 +63,9 @@ export default function Sidebar({
 
     const isNagarNigam = (name: string) => {
       const normalized = name.toLowerCase().trim().replace(/\s+/g, '-');
+      if (normalized.includes("ward")) {
+        return true;
+      }
       return nagarNigamWards.some(ward => {
         const normalizedWard = ward.toLowerCase().trim().replace(/\s+/g, '-');
         return normalized === normalizedWard || normalized.includes(normalizedWard);

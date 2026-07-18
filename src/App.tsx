@@ -183,6 +183,7 @@ export default function App() {
     const nagarNigamWards = [
       "awas-vikas", "badreshwar", "baleshwar", "baman-khola", "baman khola", "bedreshwar", "bhiyarkhola", 
       "champanaula", "chenakhan", "dharanaula", "dhunimandir", "dubkiya", "dugalkhola", "gandhi-park", 
+      "hanumaan-mandir", "hanumaan mandir",
       "heera-dungri", "heera dungri", "jhinjhad", "kahgmara", "lakshmeshwar", "lala-bazar", "lala bazar", 
       "makidi", "malla-rajpur", "malla rajpur", "mission-compound", "mission compound", "murli-manohar", 
       "murli manohar", "nanda-devi", "nanda devi", "naramdeshwar", "narsingh-wadi", "narsingh wadi", 
@@ -193,19 +194,17 @@ export default function App() {
 
     const isNagarNigam = (layerName: string) => {
       const normalized = layerName.toLowerCase().trim().replace(/\s+/g, '-');
+      if (normalized.includes("ward")) {
+        return true;
+      }
       return nagarNigamWards.some(ward => {
         const normalizedWard = ward.toLowerCase().trim().replace(/\s+/g, '-');
         return normalized === normalizedWard || normalized.includes(normalizedWard);
       });
     };
 
-    // Split layerNames into nagarNigam and other layers
-    const otherLayerNames = layerNames.filter(name => !isNagarNigam(name));
-    // Sort otherLayerNames alphabetically to match the Sidebar category rendering
-    otherLayerNames.sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
-
-    // Find the first alphabetical other layer (e.g. "All 40 Wards" or other)
-    const activeLayerName = otherLayerNames[0] || "All 40 Wards";
+    // Find the first alphabetical layer, preferring "All 40 Wards"
+    const activeLayerName = layerNames.find(name => name.toLowerCase().includes("all 40 wards")) || layerNames[0] || "";
 
     const configuration: LayerConfig[] = layerNames.map((name, index) => {
       const type = layerTypes[name] || "unknown";
@@ -345,28 +344,10 @@ export default function App() {
     setHoveredFeature(null);
     setMeasureMode("none");
     setMeasurePoints([]);
-    // Reset layers to only activate "All 40 Wards"
+    // Reset layers to only activate "All 40 Wards" (or first layer if not found)
     setLayers((prev) => {
-      const nagarNigamWards = [
-        "awas-vikas", "badreshwar", "baleshwar", "baman-khola", "baman khola", "bedreshwar", "bhiyarkhola", 
-        "champanaula", "chenakhan", "dharanaula", "dhunimandir", "dubkiya", "dugalkhola", "gandhi-park", 
-        "heera-dungri", "heera dungri", "jhinjhad", "kahgmara", "lakshmeshwar", "lala-bazar", "lala bazar", 
-        "makidi", "malla-rajpur", "malla rajpur", "mission-compound", "mission compound", "murli-manohar", 
-        "murli manohar", "nanda-devi", "nanda devi", "naramdeshwar", "narsingh-wadi", "narsingh wadi", 
-        "new-collectorate", "new collectorate", "new-indra-colony", "new indra colony", "niyanjganj", "ntd", 
-        "pandey-khola", "pandey khola", "paniya-udiyar", "paniya udiyar", "railapali", "rajpur", "ramshila", 
-        "shelakhola", "sidhpur", "talla-joshikhola", "talla joshikhola", "tallaodkhola", "tripurasundari", "vivekanandpuri"
-      ];
-      const isNagarNigam = (layerName: string) => {
-        const normalized = layerName.toLowerCase().trim().replace(/\s+/g, '-');
-        return nagarNigamWards.some(ward => {
-          const normalizedWard = ward.toLowerCase().trim().replace(/\s+/g, '-');
-          return normalized === normalizedWard || normalized.includes(normalizedWard);
-        });
-      };
-      const otherLayerNames = prev.filter((l) => !isNagarNigam(l.name)).map((l) => l.name);
-      otherLayerNames.sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
-      const activeLayerName = otherLayerNames[0] || "All 40 Wards";
+      const activeLayer = prev.find(l => l.name.toLowerCase().includes("all 40 wards")) || prev[0];
+      const activeLayerName = activeLayer ? activeLayer.name : "";
 
       return prev.map((l) => ({
         ...l,
