@@ -203,8 +203,8 @@ export default function App() {
       });
     };
 
-    // Find the first alphabetical layer, preferring "All 40 Wards"
-    const activeLayerName = layerNames.find(name => name.toLowerCase().includes("all 40 wards")) || layerNames[0] || "";
+    // Find the starting active layer, prioritizing "Nagar-Nigam-Area" as requested
+    const activeLayerName = layerNames.find(name => name.toLowerCase().replace(/[-_\s]+/g, "").includes("nagarnigamarea")) || layerNames[0] || "";
 
     const configuration: LayerConfig[] = layerNames.map((name, index) => {
       const type = layerTypes[name] || "unknown";
@@ -344,9 +344,9 @@ export default function App() {
     setHoveredFeature(null);
     setMeasureMode("none");
     setMeasurePoints([]);
-    // Reset layers to only activate "All 40 Wards" (or first layer if not found)
+    // Reset layers to only activate "Nagar-Nigam-Area" (or first layer if not found)
     setLayers((prev) => {
-      const activeLayer = prev.find(l => l.name.toLowerCase().includes("all 40 wards")) || prev[0];
+      const activeLayer = prev.find(l => l.name.toLowerCase().replace(/[-_\s]+/g, "").includes("nagarnigamarea")) || prev[0];
       const activeLayerName = activeLayer ? activeLayer.name : "";
 
       return prev.map((l) => ({
