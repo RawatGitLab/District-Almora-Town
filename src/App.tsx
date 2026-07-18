@@ -25,7 +25,7 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
 
   // Map & Interaction state
-  const [activeBaseMap, setActiveBaseMap] = useState<string>("osm");
+  const [activeBaseMap, setActiveBaseMap] = useState<string>("satellite");
   const [selectedFeature, setSelectedFeature] = useState<GisFeature | null>(null);
   const [hoveredFeature, setHoveredFeature] = useState<GisFeature | null>(null);
   const [isTableCollapsed, setIsTableCollapsed] = useState<boolean>(true);
@@ -169,6 +169,44 @@ export default function App() {
 
     layerNames.sort((a, b) => sortPriority(a, layerTypes[a]) - sortPriority(b, layerTypes[b]));
 
+    const hslToHex = (h: number, s: number, l: number) => {
+      const light = l / 100;
+      const a = (s * Math.min(light, 1 - light)) / 100;
+      const f = (n: number) => {
+        const k = (n + h / 30) % 12;
+        const colorVal = light - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+        return Math.round(255 * colorVal).toString(16).padStart(2, "0");
+      };
+      return `#${f(0)}${f(8)}${f(4)}`;
+    };
+
+    const nagarNigamWards = [
+      "awas-vikas", "badreshwar", "baleshwar", "baman-khola", "baman khola", "bedreshwar", "bhiyarkhola", 
+      "champanaula", "chenakhan", "dharanaula", "dhunimandir", "dubkiya", "dugalkhola", "gandhi-park", 
+      "heera-dungri", "heera dungri", "jhinjhad", "kahgmara", "lakshmeshwar", "lala-bazar", "lala bazar", 
+      "makidi", "malla-rajpur", "malla rajpur", "mission-compound", "mission compound", "murli-manohar", 
+      "murli manohar", "nanda-devi", "nanda devi", "naramdeshwar", "narsingh-wadi", "narsingh wadi", 
+      "new-collectorate", "new collectorate", "new-indra-colony", "new indra colony", "niyanjganj", "ntd", 
+      "pandey-khola", "pandey khola", "paniya-udiyar", "paniya udiyar", "railapali", "rajpur", "ramshila", 
+      "shelakhola", "sidhpur", "talla-joshikhola", "talla joshikhola", "tallaodkhola", "tripurasundari", "vivekanandpuri"
+    ];
+
+    const isNagarNigam = (layerName: string) => {
+      const normalized = layerName.toLowerCase().trim().replace(/\s+/g, '-');
+      return nagarNigamWards.some(ward => {
+        const normalizedWard = ward.toLowerCase().trim().replace(/\s+/g, '-');
+        return normalized === normalizedWard || normalized.includes(normalizedWard);
+      });
+    };
+
+    // Split layerNames into nagarNigam and other layers
+    const otherLayerNames = layerNames.filter(name => !isNagarNigam(name));
+    // Sort otherLayerNames alphabetically to match the Sidebar category rendering
+    otherLayerNames.sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+
+    // Find the first alphabetical other layer (e.g. "All 40 Wards" or other)
+    const activeLayerName = otherLayerNames[0] || "All 40 Wards";
+
     const configuration: LayerConfig[] = layerNames.map((name, index) => {
       const type = layerTypes[name] || "unknown";
       
@@ -212,14 +250,21 @@ export default function App() {
       } else {
         // Dynamic palette for any other shapefile imported
         const hue = (index * 137.5) % 360; 
-        color = `hsl(${hue}, 70%, 45%)`;
-        fillColor = `hsl(${hue}, 70%, 65%)`;
+        color = hslToHex(hue, 70, 45);
+        fillColor = hslToHex(hue, 70, 65);
+      }
+
+      // If it is a polygon layer, make it hollow (no fill) and white boundary by default
+      if (type === "polygon") {
+        color = "#ffffff";
+        fillColor = "#ffffff";
+        fillOpacity = 0.0;
       }
 
       return {
         id: `layer-${index}-${name.replace(/\s+/g, '-')}`,
         name: name,
-        visible: true,
+        visible: name === activeLayerName,
         type: type,
         color: color,
         fillColor: fillColor,
@@ -300,8 +345,35 @@ export default function App() {
     setHoveredFeature(null);
     setMeasureMode("none");
     setMeasurePoints([]);
-    // Simple state refresh to reset sliders or zoom
-    setLayers((prev) => prev.map((l) => ({ ...l, visible: true, opacity: l.type === "polygon" && l.name.toLowerCase().includes("tehsil") ? 0.85 : 0.9 })));
+    // Reset layers to only activate "All 40 Wards"
+    setLayers((prev) => {
+      const nagarNigamWards = [
+        "awas-vikas", "badreshwar", "baleshwar", "baman-khola", "baman khola", "bedreshwar", "bhiyarkhola", 
+        "champanaula", "chenakhan", "dharanaula", "dhunimandir", "dubkiya", "dugalkhola", "gandhi-park", 
+        "heera-dungri", "heera dungri", "jhinjhad", "kahgmara", "lakshmeshwar", "lala-bazar", "lala bazar", 
+        "makidi", "malla-rajpur", "malla rajpur", "mission-compound", "mission compound", "murli-manohar", 
+        "murli manohar", "nanda-devi", "nanda devi", "naramdeshwar", "narsingh-wadi", "narsingh wadi", 
+        "new-collectorate", "new collectorate", "new-indra-colony", "new indra colony", "niyanjganj", "ntd", 
+        "pandey-khola", "pandey khola", "paniya-udiyar", "paniya udiyar", "railapali", "rajpur", "ramshila", 
+        "shelakhola", "sidhpur", "talla-joshikhola", "talla joshikhola", "tallaodkhola", "tripurasundari", "vivekanandpuri"
+      ];
+      const isNagarNigam = (layerName: string) => {
+        const normalized = layerName.toLowerCase().trim().replace(/\s+/g, '-');
+        return nagarNigamWards.some(ward => {
+          const normalizedWard = ward.toLowerCase().trim().replace(/\s+/g, '-');
+          return normalized === normalizedWard || normalized.includes(normalizedWard);
+        });
+      };
+      const otherLayerNames = prev.filter((l) => !isNagarNigam(l.name)).map((l) => l.name);
+      otherLayerNames.sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+      const activeLayerName = otherLayerNames[0] || "All 40 Wards";
+
+      return prev.map((l) => ({
+        ...l,
+        visible: l.name === activeLayerName,
+        opacity: l.type === "polygon" && l.name.toLowerCase().includes("tehsil") ? 0.85 : 0.9
+      }));
+    });
   };
 
   return (

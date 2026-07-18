@@ -160,7 +160,7 @@ export default function Sidebar({
                 id={`color-${layer.id}`}
                 value={layer.color}
                 onChange={(e) => updateLayerColor(layer.id, e.target.value)}
-                className="w-3.5 h-3.5 rounded cursor-pointer border border-slate-300 p-0 block bg-transparent"
+                className="w-5 h-5 rounded-md cursor-pointer border border-slate-300 p-0 bg-transparent block hover:scale-110 transition-transform duration-150 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-[5px] [&::-moz-color-swatch]:border-none [&::-moz-color-swatch]:rounded-[5px]"
                 title="Change layer color"
               />
             </div>

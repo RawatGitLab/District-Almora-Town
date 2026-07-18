@@ -123,7 +123,7 @@ export default function MapComponent({
     if (currentBase) {
       const tile = L.tileLayer(currentBase.url, {
         attribution: currentBase.attribution,
-        maxZoom: 19,
+        maxZoom: 18,
       });
       tile.addTo(map);
       tileLayerRef.current = tile;
